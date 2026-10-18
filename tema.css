@@ -1,17 +1,107 @@
-/* Tema visual: colores y tipografía. Cambiar este archivo cambia el aspecto, no el funcionamiento. */
+/* Estética «bebé» en lila: crema, pasteles empolvados, formas redondas y blanditas. */
 :root {
-  --fondo: #ffffff;
-  --superficie: #f5f5f4;
-  --texto: #1c1917;
-  --texto-suave: #78716c;
-  --borde: #e7e5e4;
-  --acento: #1c1917;
+  --fondo: #FBF6EE;
+  --superficie: #FFFFFF;
+  --texto: #2F3A5A;
+  --texto-suave: #525A78;  /* 6,8:1 sobre blanco, 5,2:1 sobre el rosa */
+  --borde: #EADFCF;
+  --acento: #B13F2C;      /* coral oscuro: legible sobre blanco y sobre rosa */
 
-  --en-casa: #15803d;
-  --reservado: #b45309;
-  --deseo: #7c3aed;
-  --no-tiene: #78716c;
+  --menta: #CDEBE1;
+  --rosa: #F8D9DC;
+  --mostaza: #F7E1A6;
+  --cielo: #D3E4F4;
+  --coral: #F4B4A4;
+  --lila: #E6DDF4;
 
-  --fuente: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --radio: 14px;
+  --fuente: "Nunito", system-ui, sans-serif;
+  --fuente-titulos: "Fredoka", "Nunito", system-ui, sans-serif;
+  --radio: 22px;
 }
+
+/* Lunares suaves de fondo */
+body {
+  background-color: var(--fondo);
+  background-image:
+    radial-gradient(var(--rosa) 2px, transparent 2.5px),
+    radial-gradient(var(--menta) 2px, transparent 2.5px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+
+h1, h2, h3, #lema, .caja-titulo, #veredicto, #cotillea, .primario, .secundario, .opciones span, #camara, .inicial, .cuenta, .filtro {
+  font-family: var(--fuente-titulos);
+}
+
+/* Cabecera: Celia es lo más grande de la página */
+#portada {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 20px 22px;
+  border-radius: 28px;
+  background: var(--lila);
+}
+#portada .dibujo { position: absolute; top: 8px; right: 6px; width: 120px; }
+@media (min-width: 640px) { #portada { padding: 28px 32px; } #portada .dibujo { width: 170px; top: 12px; right: 20px; } }
+#titulo-biblioteca, #cifra, #lema, #portada .suave { position: relative; }
+#titulo-biblioteca { max-width: 72%; }
+.titulo-pre { font-size: 1.1rem; font-weight: 500; margin-bottom: 2px; }
+.titulo-nombre { font-size: clamp(3.4rem, 17vw, 5.6rem); font-weight: 600; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+#cifra { font-size: 1.05rem; }
+#lema { font-size: 1rem; font-weight: 500; color: #5B3E8C; } /* 6,4:1 sobre el lila */
+#portada .suave { color: var(--texto); }
+
+/* Buscador */
+#consulta { border: 2px solid var(--borde); }
+#consulta:focus { outline: none; border-color: var(--acento); }
+#camara { background: var(--mostaza); border: 0; color: var(--texto); }
+
+/* Respuestas */
+#veredicto { box-shadow: 0 3px 0 var(--borde); font-size: 1.1rem; }
+#veredicto small { font-family: var(--fuente); }
+#escaneado { background: var(--superficie); border-radius: var(--radio); padding: 12px; }
+#aviso-flotante { font-family: var(--fuente-titulos); border: 2px solid var(--menta); }
+#aviso-flotante small { font-family: var(--fuente); }
+
+/* Estantería */
+#cotillea { box-shadow: 0 3px 0 var(--borde); }
+.filtro { font-weight: 500; box-shadow: 0 2px 0 var(--borde); }
+.filtro[aria-pressed="true"] { background: var(--lila); }
+.filtro[aria-pressed="true"] .cuenta { box-shadow: none; }
+.seccion h2 { font-weight: 600; }
+.cuenta { background: var(--superficie); box-shadow: 0 2px 0 var(--borde); font-weight: 500; }
+
+.libro {
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-shadow: 0 3px 0 var(--borde);
+}
+.libro h3 { font-weight: 600; }
+.portada { border-radius: 14px; }
+.inicial { color: var(--texto); font-weight: 600; }
+.libro:nth-child(4n+1) .portada { background: var(--menta); }
+.libro:nth-child(4n+2) .portada { background: var(--mostaza); }
+.libro:nth-child(4n+3) .portada { background: var(--cielo); }
+.libro:nth-child(4n+4) .portada { background: var(--coral); }
+
+/* Etiquetas de estado en pastel, con texto oscuro para que se lean bien */
+.estado.en-casa { background: var(--menta); color: #1E5A4C; }
+.estado.reservado { background: var(--mostaza); color: #6B4A00; }
+.estado.lista-deseos { background: var(--rosa); color: #8E2E44; }
+.estado.sin-estado { background: var(--fondo); color: var(--texto-suave); }
+
+/* Botones redonditos con sombra de juguete */
+.primario { background: var(--acento); color: #fff; box-shadow: 0 3px 0 #7E2A1C; }
+.primario:active { transform: translateY(2px); box-shadow: 0 1px 0 #7E2A1C; }
+.secundario { background: var(--superficie); border: 2px solid var(--borde); }
+
+/* Ventanas */
+.caja { border-radius: 28px; }
+.caja-titulo { font-weight: 600; font-size: 1.4rem; }
+.opciones span { border: 2px solid var(--borde); border-radius: 16px; font-weight: 500; }
+.opciones input:checked + span { background: var(--lila); border-color: var(--acento); outline: none; }
+.campo input { background: var(--fondo); border: 2px solid var(--borde); }
+.campo input:focus { outline: none; border-color: var(--acento); }

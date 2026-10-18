@@ -2,45 +2,40 @@
 [hidden] { display: none !important; }
 * { box-sizing: border-box; }
 
+/* Base de 17px: más legible para los abuelos. Todo lo demás va en rem. */
+html { font-size: 106.25%; }
+
 body {
   margin: 0;
   background: var(--fondo);
   color: var(--texto);
   font-family: var(--fuente);
+  line-height: 1.4;
   -webkit-text-size-adjust: 100%;
 }
 
 main {
-  max-width: 560px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 16px 16px 48px;
 }
 
-#portada { margin: 24px 0 20px; }
-#titulo-biblioteca { font-weight: 600; color: var(--texto-suave); margin: 0 0 6px; }
+#portada { margin: 8px 0 16px; }
+#titulo-biblioteca { margin: 0; line-height: 1; }
 #titulo-biblioteca:empty { display: none; }
-#cifra { font-size: 3.2rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; margin: 0; }
-#lema { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; color: var(--texto-suave); margin: 4px 0 12px; }
+.titulo-pre, .titulo-nombre { display: block; }
+#cifra { margin: 12px 0 0; font-weight: 600; }
+#lema { margin: 4px 0 0; }
+#resumen:empty { display: none; }
 .suave { color: var(--texto-suave); margin: 0; }
 
-#cotillea {
-  margin: 20px 0 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--acento);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-#cotillea::after { content: " →"; }
-#cotillea[aria-expanded="true"]::after { content: " ↑"; }
-
+/* Buscador: arriba y siempre a mano al bajar por la estantería */
 #buscador {
   display: flex;
   gap: 8px;
   position: sticky;
   top: 0;
+  z-index: 5;
   padding: 8px 0;
   background: var(--fondo);
 }
@@ -49,35 +44,44 @@ main {
   flex: 1;
   min-width: 0;
   font: inherit;
-  font-size: 1rem; /* 16px evita el zoom automático en iPhone */
-  padding: 14px 16px;
+  font-size: 1rem; /* más de 16px: evita el zoom automático en iPhone */
+  padding: 14px 18px;
   border: 1px solid var(--borde);
   border-radius: 999px;
   background: var(--superficie);
   color: var(--texto);
 }
 #consulta:focus { outline: 2px solid var(--acento); outline-offset: 1px; }
+/* En móvil el botón Escanear le quita ancho: ajustamos para que la frase quepa entera */
+@media (max-width: 480px) {
+  #consulta { padding: 14px 12px 14px 16px; }
+  #consulta::placeholder { font-size: 0.9rem; }
+  #camara { padding: 0 12px; gap: 4px; }
+}
 
 #camara {
   flex: none;
-  width: 50px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
   border: 1px solid var(--borde);
   border-radius: 999px;
   background: var(--superficie);
   color: var(--texto);
-  display: grid;
-  place-items: center;
+  font: inherit;
+  font-weight: 600;
   cursor: pointer;
 }
 
 #veredicto {
   margin: 16px 0 8px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border-radius: var(--radio);
   background: var(--superficie);
   font-weight: 600;
 }
-#veredicto small { display: block; font-weight: 400; color: var(--texto-suave); margin-top: 4px; }
+#veredicto small { display: block; font-weight: 400; color: var(--texto-suave); margin-top: 4px; font-size: 0.95rem; }
 
 #escaneado {
   display: flex;
@@ -85,9 +89,10 @@ main {
   align-items: center;
   margin: 16px 0 0;
   color: var(--texto-suave);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 #escaneado strong { display: block; color: var(--texto); font-size: 1rem; }
+#escaneado img { width: 56px; height: 78px; object-fit: cover; border-radius: 8px; }
 
 .capa {
   position: fixed;
@@ -102,7 +107,7 @@ main {
 .capa[hidden] { display: none; }
 .caja {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   background: var(--fondo);
   border-radius: var(--radio);
   padding: 20px;
@@ -128,19 +133,36 @@ main {
 .secundario { border: 1px solid var(--borde); background: var(--superficie); color: var(--texto); }
 
 .acciones { margin-top: 12px; }
-#veredicto .enlace, .reservar {
+#veredicto .volver { display: block; margin-top: 14px; }
+
+#aviso-flotante {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 20;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  transform: translateX(-50%);
+  padding: 14px 18px;
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+  font-weight: 600;
+}
+#aviso-flotante small { display: block; font-weight: 400; color: var(--texto-suave); margin-top: 2px; font-size: 0.95rem; }
+
+#veredicto .enlace {
   margin-top: 10px;
   padding: 0;
   border: 0;
   background: none;
   color: var(--acento);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
 }
-.reservar { display: block; margin-top: 8px; }
 
 #form { text-align: left; }
 #form .caja-titulo, #form > .suave { text-align: center; }
@@ -153,13 +175,13 @@ main {
   border: 1px solid var(--borde);
   border-radius: 10px;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
 }
 .opciones input:checked + span { border-color: var(--acento); background: var(--superficie); outline: 1px solid var(--acento); }
 .opciones input:focus-visible + span { outline: 2px solid var(--acento); }
-.campo { display: block; margin-top: 12px; font-size: 0.9rem; font-weight: 600; }
+.campo { display: block; margin-top: 12px; font-size: 0.95rem; font-weight: 600; }
 .campo .suave { font-weight: 400; }
 .campo input {
   display: block;
@@ -174,11 +196,55 @@ main {
   font-size: 1rem;
   font-weight: 400;
 }
-.aviso { min-height: 1.2em; margin: 12px 0 0; font-size: 0.9rem; color: var(--reservado); text-align: center; }
+.aviso { min-height: 1.2em; margin: 12px 0 0; font-size: 0.95rem; color: var(--acento); text-align: center; }
 
-#resultados { list-style: none; padding: 0; margin: 8px 0 0; }
+/* --- Estantería: botón para abrirla, secciones y lista de cuentos --- */
+
+#cotillea {
+  display: block;
+  margin: 20px auto 0;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--acento);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+#cotillea::after { content: " →"; }
+#cotillea[aria-expanded="true"]::after { content: " ↑"; }
+
+/* Filtros: botones grandes que se reparten en varias líneas si no caben */
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 4px; }
+.filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 2px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.filtro[aria-pressed="true"] { border-color: var(--acento); }
+.filtro .cuenta { padding: 0 8px; }
+
+.seccion { margin-top: 24px; }
+.seccion h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 1.2rem; }
+.cuenta { padding: 1px 10px; border-radius: 999px; font-size: 0.9rem; }
+.vacia { margin: 24px 0; font-weight: 600; }
+.vacia small { display: block; font-weight: 400; color: var(--texto-suave); }
+
+.lista-libros { list-style: none; margin: 12px 0 0; padding: 0; }
+.seccion .lista-libros { margin-top: 0; }
 
 .libro {
+  position: relative;
   display: flex;
   gap: 14px;
   padding: 12px 0;
@@ -186,32 +252,44 @@ main {
 }
 
 .portada {
+  position: relative;
   flex: none;
-  width: 56px;
-  height: 78px;
-  border-radius: 6px;
-  background: var(--superficie);
-  object-fit: cover;
+  width: 64px;
+  height: 88px;
+  overflow: hidden;
   display: grid;
   place-items: center;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--texto-suave);
+  background: var(--superficie);
 }
+.portada img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.inicial { font-size: 1.5rem; font-weight: 700; }
 
-.datos { min-width: 0; }
-.datos h2 { font-size: 1rem; margin: 2px 0; }
-.datos p { margin: 2px 0; color: var(--texto-suave); font-size: 0.9rem; }
+.datos { min-width: 0; flex: 1; padding-right: 44px; } /* hueco para el lápiz */
+.datos h3 { margin: 2px 0; font-size: 1.05rem; line-height: 1.25; overflow-wrap: anywhere; }
+.autor, .nota { margin: 2px 0; font-size: 0.9rem; color: var(--texto-suave); overflow-wrap: anywhere; }
+
+/* Editar: discreto, en la esquina de la tarjeta */
+.editar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
 
 .estado {
   display: inline-block;
   margin-top: 6px;
   padding: 3px 10px;
   border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
-.estado.en-casa { background: var(--en-casa); }
-.estado.reservado { background: var(--reservado); }
-.estado.lista-deseos { background: var(--deseo); }
+.regalar { width: auto; margin-top: 10px; padding: 10px 18px; font-size: 0.95rem; }

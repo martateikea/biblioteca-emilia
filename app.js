@@ -1,5 +1,6 @@
 // Lógica de la web: cargar libros, buscar y pintar resultados.
 
+// Orden de las secciones de la estantería y de los resultados de búsqueda.
 const ORDEN_ESTADOS = ['En casa', 'Reservado', 'Lista de deseos'];
 const PALABRAS_VACIAS = new Set(['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'de', 'del', 'y', 'a']);
 
@@ -37,26 +38,78 @@ function ordenar(a, b) {
 }
 
 const escapar = (texto) => String(texto ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-const claseEstado = (estado) => palabras(estado).join('-') || 'sin-estado';
+// Fija, sin pasar por palabras(): esa función recorta la "s" final y rompería "lista-deseos".
+const CLASES_ESTADO = { 'En casa': 'en-casa', 'Reservado': 'reservado', 'Lista de deseos': 'lista-deseos' };
+const claseEstado = (estado) => CLASES_ESTADO[estado] ?? 'sin-estado';
 const mensaje = ([titular, explicacion]) => `${escapar(titular)}<small>${escapar(explicacion)}</small>`;
 
+// La portada guardada; si no hay, la de Open Library por ISBN (404 si no la tiene).
+function urlPortada(libro) {
+  if (/^https?:\/\//.test(libro.portada)) return libro.portada;
+  const isbn = soloDigitos(libro.isbn);
+  return isbn.length === 10 || isbn.length === 13
+    ? `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg?default=false`
+    : '';
+}
+
+const ICONO_LAPIZ = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+
 function tarjeta(libro) {
-  const portada = /^https?:\/\//.test(libro.portada)
-    ? `<img class="portada" src="${escapar(libro.portada)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`
-    : `<div class="portada">${escapar((String(libro.titulo).match(/[\p{L}\p{N}]/u)?.[0] ?? '').toUpperCase())}</div>`;
+  const indice = libros.indexOf(libro);
+  const url = urlPortada(libro);
+  const inicial = (String(libro.titulo).match(/[\p{L}\p{N}]/u)?.[0] ?? '').toUpperCase();
+  // La inicial queda debajo: se ve mientras carga la imagen y si no hay o falla.
   return `
     <li class="libro">
-      ${portada}
-      <div class="datos">
-        <h2>${escapar(libro.titulo)}</h2>
-        ${libro.autor ? `<p>${escapar(libro.autor)}</p>` : ''}
-        ${libro.nota ? `<p>${escapar(libro.nota)}</p>` : ''}
-        ${libro.estado ? `<span class="estado ${claseEstado(libro.estado)}">${escapar(TEXTOS.estados[libro.estado] ?? libro.estado)}</span>` : ''}
-        ${libro.estado === 'Lista de deseos'
-          ? `<button type="button" class="reservar" data-reservar="${libros.indexOf(libro)}">${escapar(TEXTOS.botonReservar)}</button>`
-          : `<button type="button" class="reservar" data-editar="${libros.indexOf(libro)}">${escapar(TEXTOS.botonEditar)}</button>`}
+      <div class="portada">
+        <span class="inicial" aria-hidden="true">${escapar(inicial)}</span>
+        ${url ? `<img src="${escapar(url)}" alt="" loading="lazy" onerror="this.remove()">` : ''}
       </div>
+      <div class="datos">
+        <h3>${escapar(libro.titulo)}</h3>
+        ${libro.autor ? `<p class="autor">${escapar(libro.autor)}</p>` : ''}
+        ${libro.nota ? `<p class="nota">${escapar(libro.nota)}</p>` : ''}
+        ${libro.estado ? `<span class="estado ${claseEstado(libro.estado)}">${escapar(TEXTOS.estados[libro.estado] ?? libro.estado)}</span>` : ''}
+        ${libro.estado === 'Lista de deseos' ? `<button type="button" class="primario regalar" data-reservar="${indice}">${escapar(TEXTOS.botonReservar)}</button>` : ''}
+      </div>
+      ${libro.estado === 'Lista de deseos' ? '' : `<button type="button" class="editar" data-editar="${indice}" aria-label="${escapar(TEXTOS.botonEditar)} «${escapar(libro.titulo)}»">${ICONO_LAPIZ}</button>`}
     </li>`;
+}
+
+const listaLibros = (lista) => `<ul class="lista-libros">${lista.map(tarjeta).join('')}</ul>`;
+const porTitulo = (a, b) => String(a.titulo).localeCompare(String(b.titulo), 'es');
+
+// Estantería abierta: los libros por secciones, con filtros para ir directo a una.
+let estanteriaAbierta = false;
+let filtro = 'todos';
+
+function filtros(grupos) {
+  const boton = (clave, texto, n) => `
+    <button type="button" class="filtro" data-filtro="${escapar(clave)}" aria-pressed="${filtro === clave}">
+      ${escapar(texto)} <span class="cuenta">${n}</span>
+    </button>`;
+  return `
+    <div class="filtros" role="group" aria-label="${escapar(TEXTOS.filtrar)}">
+      ${boton('todos', TEXTOS.todos, libros.length)}
+      ${grupos.map(([estado, lista]) => boton(estado, TEXTOS.secciones[estado], lista.length)).join('')}
+    </div>`;
+}
+
+function estanteria() {
+  if (!libros.length) return `<p class="vacia">${mensaje(TEXTOS.vacia)}</p>`;
+  const grupos = ORDEN_ESTADOS.map((estado) => [estado, libros.filter((l) => l.estado === estado)]);
+  grupos.push(['otros', libros.filter((l) => !ORDEN_ESTADOS.includes(l.estado))]);
+  const conLibros = grupos.filter(([, lista]) => lista.length);
+  // Si el filtro elegido se ha quedado vacío (p. ej. tras editar), volvemos a «Todos».
+  if (!conLibros.some(([estado]) => estado === filtro)) filtro = 'todos';
+  return filtros(conLibros) + conLibros
+    .filter(([estado]) => filtro === 'todos' || estado === filtro)
+    .map(([estado, lista]) => `
+      <section class="seccion">
+        <h2>${escapar(TEXTOS.secciones[estado])} <span class="cuenta">${lista.length}</span></h2>
+        ${listaLibros([...lista].sort(porTitulo))}
+      </section>`)
+    .join('');
 }
 
 // La respuesta directa a "¿lo tiene?", encima de la lista.
@@ -81,20 +134,17 @@ function veredicto(encontrados) {
   return mensaje(TEXTOS.deseo);
 }
 
-let cotilleando = false;
-
 // `forzados`: resultados ya calculados (p. ej. tras escanear); si no, se busca lo escrito.
 function pintar(forzados) {
   const consulta = $('consulta').value.trim();
   const encontrados = (forzados ?? (consulta ? libros.filter((l) => coincide(l, consulta)) : [])).sort(ordenar);
-  const visibles = consulta ? encontrados : (cotilleando ? [...libros].sort(ordenar) : []);
 
   $('veredicto').hidden = !consulta;
-  $('veredicto').innerHTML = consulta ? veredicto(encontrados) : '';
+  $('veredicto').innerHTML = consulta ? veredicto(encontrados) + botonVolver() : '';
   $('cotillea').hidden = Boolean(consulta) || !libros.length;
-  $('cotillea').setAttribute('aria-expanded', cotilleando);
-  $('cotillea').textContent = cotilleando ? TEXTOS.ocultar : TEXTOS.cotillea(CONFIG.peque);
-  $('resultados').innerHTML = visibles.map(tarjeta).join('');
+  $('cotillea').setAttribute('aria-expanded', estanteriaAbierta);
+  $('cotillea').textContent = estanteriaAbierta ? TEXTOS.ocultar : TEXTOS.cotillea(CONFIG.peque);
+  $('resultados').innerHTML = consulta ? listaLibros(encontrados) : (estanteriaAbierta || !libros.length ? estanteria() : '');
 }
 
 // --- ISBN: buscar por código y, si no está, por el título que dice Google Books ---
@@ -173,7 +223,7 @@ async function buscarIsbn(isbn) {
   pintar(ficha ? libros.filter((l) => mismoTitulo(l.titulo, ficha.titulo)) : []);
   if (!ficha) {
     // Sin título no podemos asegurar que no lo tenga: puede estar en el Sheet sin ISBN.
-    $('veredicto').innerHTML = mensaje(TEXTOS.desconocido) + botonesAlta();
+    $('veredicto').innerHTML = mensaje(TEXTOS.desconocido) + botonesAlta() + botonVolver();
   }
 }
 
@@ -195,7 +245,8 @@ function recordarNombre(nombre) {
 }
 
 function abrirFormulario(accion, { estado, libro } = {}) {
-  pendiente = { accion, libro };
+  // Si se edita o reserva navegando por la estantería, al guardar seguimos en ella.
+  pendiente = { accion, libro, desdeEstanteria: accion !== 'alta' && !$('consulta').value.trim() };
   $('form').reset();
   $('form-aviso').textContent = '';
   $('form-enviar').disabled = false;
@@ -296,7 +347,14 @@ async function guardarFormulario(evento) {
     }
     if (datos.nombre) recordarNombre(datos.nombre);
     $('formulario').hidden = true;
-    mostrarApuntado(libro, pendiente.accion === 'editar' ? TEXTOS.editado : null);
+    const texto = pendiente.accion === 'editar' ? TEXTOS.editado : null;
+    if (pendiente.desdeEstanteria) {
+      actualizarCifra();
+      pintar();
+      avisar(texto ?? TEXTOS.apuntadoReservado);
+    } else {
+      mostrarApuntado(libro, texto);
+    }
   } catch (error) {
     $('form-enviar').disabled = false;
     $('form-aviso').textContent = error instanceof TypeError
@@ -306,12 +364,35 @@ async function guardarFormulario(evento) {
 }
 
 function mostrarApuntado(libro, texto) {
+  $('aviso-flotante').hidden = true;
   actualizarCifra();
   $('consulta').value = libro.titulo;
   $('escaneado').hidden = true;
   ultimaFicha = null;
   pintar([libro]);
-  $('veredicto').innerHTML = mensaje(texto ?? (libro.estado === 'Reservado' ? TEXTOS.apuntadoReservado : TEXTOS.apuntadoEnCasa));
+  $('veredicto').innerHTML = mensaje(texto ?? (libro.estado === 'Reservado' ? TEXTOS.apuntadoReservado : TEXTOS.apuntadoEnCasa)) + botonVolver();
+}
+
+// Salida siempre visible cuando hay algo en el buscador.
+const botonVolver = () => `<button type="button" class="enlace volver" data-volver>${escapar(TEXTOS.volver)}</button>`;
+
+function volverAEstanteria() {
+  $('consulta').value = '';
+  $('escaneado').hidden = true;
+  ultimaFicha = null;
+  estanteriaAbierta = true;
+  filtro = 'todos';
+  $('aviso-flotante').hidden = true;
+  pintar();
+}
+
+// Aviso breve abajo de la pantalla, que se va solo.
+let temporizadorAviso = null;
+function avisar([titular, explicacion]) {
+  $('aviso-flotante').innerHTML = mensaje([titular, explicacion]);
+  $('aviso-flotante').hidden = false;
+  clearTimeout(temporizadorAviso);
+  temporizadorAviso = setTimeout(() => { $('aviso-flotante').hidden = true; }, 3500);
 }
 
 // --- Escáner con la cámara (la librería se descarga solo al usarlo) ---
@@ -363,13 +444,20 @@ async function alLeer(codigo) {
 }
 
 function actualizarCifra() {
-  const enCasa = libros.filter((l) => l.estado === 'En casa').length;
-  $('cifra').textContent = TEXTOS.cifra(enCasa);
+  const deseos = libros.filter((l) => l.estado === 'Lista de deseos').length;
+  $('cifra').textContent = TEXTOS.cifra(libros.length, deseos);
+}
+
+// "La biblioteca de" pequeño y el nombre del peque en grande.
+function pintarTitulo() {
+  $('titulo-biblioteca').innerHTML = CONFIG.peque
+    ? `<span class="titulo-pre">${escapar(TEXTOS.tituloPre)}</span> <span class="titulo-nombre">${escapar(CONFIG.peque)}</span>`
+    : `<span class="titulo-nombre">${escapar(CONFIG.nombre)}</span>`;
 }
 
 async function cargar() {
   document.title = CONFIG.nombre;
-  $('titulo-biblioteca').textContent = CONFIG.nombre;
+  pintarTitulo();
   try {
     if (CONFIG.urlDatos) {
       const respuesta = await fetch(CONFIG.urlDatos);
@@ -396,7 +484,7 @@ $('buscador').addEventListener('submit', (e) => {
   $('consulta').blur(); // cierra el teclado del móvil
 });
 $('cotillea').addEventListener('click', () => {
-  cotilleando = !cotilleando;
+  estanteriaAbierta = !estanteriaAbierta;
   pintar();
 });
 $('camara').addEventListener('click', abrirEscaner);
@@ -406,6 +494,12 @@ document.addEventListener('click', (evento) => {
   const alta = evento.target.closest('[data-alta]');
   const reserva = evento.target.closest('[data-reservar]');
   const edicion = evento.target.closest('[data-editar]');
+  const boton = evento.target.closest('[data-filtro]');
+  if (evento.target.closest('[data-volver]')) volverAEstanteria();
+  if (boton) {
+    filtro = boton.dataset.filtro;
+    pintar();
+  }
   if (alta) abrirFormulario('alta', { estado: alta.dataset.alta });
   if (reserva) abrirFormulario('reservar', { libro: libros[reserva.dataset.reservar] });
   if (edicion) abrirFormulario('editar', { libro: libros[edicion.dataset.editar] });
