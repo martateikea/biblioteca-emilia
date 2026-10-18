@@ -29,6 +29,12 @@ main {
 #resumen:empty { display: none; }
 .suave { color: var(--texto-suave); margin: 0; }
 
+/* Página de entrada con la contraseña de la casa */
+#acceso { max-width: 440px; margin: 8px auto 0; padding: 22px 20px; border-radius: var(--radio); background: var(--superficie); text-align: center; }
+#acceso .campo { text-align: left; }
+body.bloqueada #buscador, body.bloqueada #escaneado, body.bloqueada #veredicto,
+body.bloqueada #cotillea, body.bloqueada #resultados, body.bloqueada #lema { display: none; }
+
 /* Buscador: arriba y siempre a mano al bajar por la estantería */
 #buscador {
   display: flex;

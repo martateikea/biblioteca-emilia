@@ -33,5 +33,10 @@ const TEXTOS = {
   formEditar: ['¿Hay novedades?', '¿Ya se lo has dado? Cámbialo aquí.'],
   editado: ['¡Gracias!', 'La estantería ya está al día.'],
 
+  accesoComprobando: 'Comprobando…',
+  accesoError: 'Esa no es. Pregúntala en casa.',
+  accesoCambiada: 'La contraseña ha cambiado. Escribe la nueva.',
+  accesoSinConexion: 'No hay conexión. Inténtalo de nuevo.',
+
   error: ['¡Ups!', 'Los cuentos se han quedado dormidos.', 'Recarga la página y lo intentamos otra vez.'],
 };

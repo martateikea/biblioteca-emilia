@@ -300,9 +300,14 @@ async function enviar(datos) {
   const respuesta = await fetch(CONFIG.urlDatos, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita la comprobación previa que Apps Script no admite
-    body: JSON.stringify(datos),
+    body: JSON.stringify({ ...datos, clave: recordarClave() }),
   });
   const resultado = await respuesta.json();
+  if (resultado.clave === false) {
+    // La contraseña ha cambiado desde que entró: se la volvemos a pedir.
+    $('formulario').hidden = true;
+    pedirClave(TEXTOS.accesoCambiada);
+  }
   if (!resultado.ok) throw new Error(resultado.error);
   return resultado.libro;
 }
@@ -455,22 +460,82 @@ function pintarTitulo() {
     : `<span class="titulo-nombre">${escapar(CONFIG.nombre)}</span>`;
 }
 
+// --- Contraseña de la casa: la comprueba el script del Sheet; aquí solo se pide y se recuerda ---
+
+const CLAVE_GUARDADA = `clave:${CONFIG.urlDatos}`; // una por biblioteca: todas comparten dirección web
+
+function recordarClave(clave) {
+  try {
+    if (clave === undefined) return localStorage.getItem(CLAVE_GUARDADA) ?? '';
+    localStorage.setItem(CLAVE_GUARDADA, clave);
+  } catch (error) {
+    return '';
+  }
+}
+
+async function pedirLibros(clave) {
+  const respuesta = await fetch(`${CONFIG.urlDatos}?clave=${encodeURIComponent(clave)}`);
+  return respuesta.json();
+}
+
+function pedirClave(aviso = '') {
+  document.body.classList.add('bloqueada');
+  $('acceso').hidden = false;
+  $('cifra').textContent = '';
+  $('acceso-aviso').textContent = aviso;
+  $('acceso-entrar').disabled = false;
+  $('clave').focus();
+}
+
+function mostrarBiblioteca() {
+  document.body.classList.remove('bloqueada');
+  $('acceso').hidden = true;
+  $('acceso-aviso').textContent = '';
+  actualizarCifra();
+  $('resumen').textContent = `${TEXTOS.resumen(CONFIG.peque)}${CONFIG.urlDatos ? '' : ' (Datos de ejemplo)'}`;
+  pintar();
+}
+
+async function entrar(evento) {
+  evento.preventDefault();
+  const clave = $('clave').value.trim();
+  if (!clave) return;
+  $('acceso-entrar').disabled = true;
+  $('acceso-aviso').textContent = TEXTOS.accesoComprobando;
+  try {
+    const datos = await pedirLibros(clave);
+    if (datos.clave === false) {
+      pedirClave(TEXTOS.accesoError);
+      $('clave').select();
+      return;
+    }
+    recordarClave(clave);
+    libros = datos.libros;
+    mostrarBiblioteca();
+  } catch (error) {
+    pedirClave(TEXTOS.accesoSinConexion);
+  }
+}
+
 async function cargar() {
   document.title = CONFIG.nombre;
   pintarTitulo();
+  if (!CONFIG.urlDatos) {
+    libros = DATOS_EJEMPLO;
+    mostrarBiblioteca();
+    return;
+  }
   try {
-    if (CONFIG.urlDatos) {
-      const respuesta = await fetch(CONFIG.urlDatos);
-      libros = (await respuesta.json()).libros;
-    } else {
-      libros = DATOS_EJEMPLO;
+    const datos = await pedirLibros(recordarClave());
+    if (datos.clave === false) {
+      pedirClave();
+      return;
     }
-    actualizarCifra();
-    $('resumen').textContent = `${TEXTOS.resumen(CONFIG.peque)}${CONFIG.urlDatos ? '' : ' (Datos de ejemplo)'}`;
+    libros = datos.libros;
+    mostrarBiblioteca();
   } catch (error) {
     [$('cifra').textContent, $('lema').textContent, $('resumen').textContent] = TEXTOS.error;
   }
-  pintar();
 }
 
 $('consulta').addEventListener('input', () => {
@@ -505,6 +570,7 @@ document.addEventListener('click', (evento) => {
   if (edicion) abrirFormulario('editar', { libro: libros[edicion.dataset.editar] });
 });
 $('form').addEventListener('submit', guardarFormulario);
+$('acceso').addEventListener('submit', entrar);
 $('form').addEventListener('change', actualizarNombre);
 campo('isbn').addEventListener('input', completarPorIsbn);
 $('form-cerrar').addEventListener('click', () => { $('formulario').hidden = true; });

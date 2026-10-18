@@ -63,7 +63,22 @@ function configurar() {
 
 // --- Lectura: la web llama aquí para obtener los libros ---
 
-function doGet() {
+// --- Contraseña de la casa ---
+// Se guarda en Configuración del proyecto > Propiedades del script, con el nombre CLAVE.
+// Nunca en el código: los repositorios de GitHub son públicos.
+// Sin CLAVE, la biblioteca queda abierta (útil para la demo de las charlas).
+
+function claveCorrecta(clave) {
+  const guardada = PropertiesService.getScriptProperties().getProperty('CLAVE');
+  if (!guardada) return true;
+  const normal = (texto) => String(texto ?? '').trim().toLowerCase(); // sin líos de mayúsculas
+  return normal(clave) === normal(guardada);
+}
+
+const SIN_CLAVE = { ok: false, clave: false, error: 'La contraseña no es correcta.' };
+
+function doGet(e) {
+  if (!claveCorrecta(e?.parameter?.clave)) return responder(SIN_CLAVE);
   const { filas, indice } = leerHoja();
   const libros = filas
     .filter((fila) => fila[indice.titulo] || fila[indice.isbn])
@@ -74,7 +89,7 @@ function doGet() {
       });
       return publico(libro);
     });
-  return responder({ libros });
+  return responder({ ok: true, libros });
 }
 
 // --- Escritura: dar de alta un libro o reservar uno de la lista de deseos ---
@@ -84,6 +99,7 @@ function doPost(e) {
   bloqueo.waitLock(10000);
   try {
     const datos = JSON.parse(e.postData.contents);
+    if (!claveCorrecta(datos.clave)) return responder(SIN_CLAVE);
     const acciones = { alta, reservar, editar };
     const accion = acciones[datos.accion];
     if (!accion) throw new Error('Acción no válida.');

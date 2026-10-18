@@ -98,6 +98,9 @@ h1, h2, h3, #lema, .caja-titulo, #veredicto, #cotillea, .primario, .secundario, 
 .primario:active { transform: translateY(2px); box-shadow: 0 1px 0 #7E2A1C; }
 .secundario { background: var(--superficie); border: 2px solid var(--borde); }
 
+/* Entrada */
+#acceso { box-shadow: 0 3px 0 var(--borde); }
+
 /* Ventanas */
 .caja { border-radius: 28px; }
 .caja-titulo { font-weight: 600; font-size: 1.4rem; }

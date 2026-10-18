@@ -36,6 +36,16 @@
       <p id="resumen" class="suave"></p>
     </header>
 
+    <form id="acceso" hidden>
+      <p class="caja-titulo">Esta estantería es de la familia</p>
+      <p class="suave">Escribe la contraseña de la casa para entrar. Solo te la pediremos una vez.</p>
+      <label class="campo">Contraseña de la casa
+        <input id="clave" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go">
+      </label>
+      <p id="acceso-aviso" class="aviso" role="alert"></p>
+      <button id="acceso-entrar" type="submit" class="primario">Entrar</button>
+    </form>
+
     <form id="buscador" role="search">
       <input id="consulta" type="search" placeholder="Busquemos si ya lo tiene…" autocomplete="off" enterkeyhint="search">
       <button id="camara" type="button" aria-label="Escanear el código de barras">
