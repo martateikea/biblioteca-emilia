@@ -1,0 +1,112 @@
+/* Estética «bebé»: crema, pasteles empolvados, formas redondas y blanditas. */
+:root {
+  --fondo: #FBF6EE;
+  --superficie: #FFFFFF;
+  --texto: #2F3A5A;
+  --texto-suave: #6E7591;
+  --borde: #EADFCF;
+  --acento: #C9503C;
+
+  --menta: #CDEBE1;
+  --rosa: #F8D9DC;
+  --mostaza: #F7E1A6;
+  --cielo: #D3E4F4;
+  --coral: #F4B4A4;
+
+  --fuente: "Nunito", system-ui, sans-serif;
+  --fuente-titulos: "Fredoka", "Nunito", system-ui, sans-serif;
+  --radio: 22px;
+}
+
+/* Lunares suaves de fondo */
+body {
+  background-color: var(--fondo);
+  background-image:
+    radial-gradient(var(--rosa) 2px, transparent 2.5px),
+    radial-gradient(var(--menta) 2px, transparent 2.5px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+
+h2, #cifra, #lema, .caja-titulo, #veredicto, #cotillea, .primario, .secundario, .opciones span {
+  font-family: var(--fuente-titulos);
+}
+
+/* Portada: una tarjeta rosa con su dibujo */
+#portada {
+  position: relative;
+  overflow: hidden;
+  margin: 8px 0 20px;
+  padding: 28px 20px 22px;
+  border-radius: 28px;
+  background: var(--rosa);
+}
+#portada .dibujo { position: absolute; top: 6px; right: 4px; width: 130px; }
+#titulo-biblioteca { position: relative; font-family: var(--fuente-titulos); font-size: 1.15rem; font-weight: 500; color: var(--texto); margin: 0 0 4px; max-width: 65%; }
+#cifra { position: relative; font-size: 2.8rem; font-weight: 600; letter-spacing: -0.01em; }
+#lema { position: relative; font-size: 1.3rem; font-weight: 500; color: var(--acento); margin: 6px 0 10px; }
+#portada .suave { position: relative; color: var(--texto); opacity: 0.75; }
+
+/* Buscador */
+#buscador { background: transparent; }
+#consulta { background: var(--superficie); border: 2px solid var(--borde); }
+#consulta:focus { outline: none; border-color: var(--acento); }
+#camara { background: var(--mostaza); border: 0; color: var(--texto); width: 52px; }
+
+/* Respuestas y tarjetas */
+#veredicto {
+  background: var(--superficie);
+  border-radius: var(--radio);
+  box-shadow: 0 3px 0 var(--borde);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+#veredicto small { font-family: var(--fuente); font-size: 0.9rem; }
+#escaneado { background: var(--superficie); border-radius: var(--radio); padding: 12px; }
+
+#cotillea {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: var(--superficie);
+  box-shadow: 0 3px 0 var(--borde);
+  text-decoration: none;
+}
+
+#resultados { margin-top: 12px; }
+.libro {
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-shadow: 0 3px 0 var(--borde);
+}
+.datos h2 { font-weight: 600; font-size: 1.05rem; }
+
+.portada { border-radius: 14px; font-family: var(--fuente-titulos); color: var(--texto); }
+.libro:nth-child(4n+1) div.portada { background: var(--menta); }
+.libro:nth-child(4n+2) div.portada { background: var(--mostaza); }
+.libro:nth-child(4n+3) div.portada { background: var(--cielo); }
+.libro:nth-child(4n+4) div.portada { background: var(--coral); }
+
+/* Etiquetas de estado en pastel, con texto oscuro para que se lean bien */
+.estado { color: var(--texto); font-weight: 700; }
+.estado.en-casa { background: var(--menta); color: #1E5A4C; }
+.estado.reservado { background: var(--mostaza); color: #6B4A00; }
+.estado.lista-deseos { background: var(--rosa); color: #8E2E44; }
+
+/* Botones redonditos con sombra de juguete */
+.primario { background: var(--acento); color: #fff; box-shadow: 0 3px 0 #94392A; }
+.primario:active { transform: translateY(2px); box-shadow: 0 1px 0 #94392A; }
+.secundario { background: var(--superficie); border: 2px solid var(--borde); }
+.reservar, #veredicto .enlace { color: var(--acento); }
+
+/* Ventanas */
+.caja { border-radius: 28px; }
+.caja-titulo { font-weight: 600; font-size: 1.4rem; }
+.opciones span { border: 2px solid var(--borde); border-radius: 16px; font-weight: 500; }
+.opciones input:checked + span { background: var(--rosa); border-color: var(--acento); outline: none; }
+.campo input { background: var(--fondo); border: 2px solid var(--borde); }
+.campo input:focus { outline: none; border-color: var(--acento); }
