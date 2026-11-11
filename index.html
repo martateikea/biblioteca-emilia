@@ -97,6 +97,18 @@
       <p id="form-aviso" class="aviso"></p>
       <button id="form-enviar" type="submit" class="primario">Apuntarlo ♡</button>
       <button id="form-cerrar" type="button" class="secundario">Ahora no</button>
+      <!-- Solo al editar: anular la reserva o quitar el cuento (con confirmación). Los textos vienen de textos.js -->
+      <div id="form-mas" hidden>
+        <div id="form-mas-botones">
+          <button id="form-anular" type="button" class="enlace-suave"></button>
+          <button id="form-quitar" type="button" class="enlace-peligro"></button>
+        </div>
+        <div id="form-confirmar" hidden>
+          <p id="form-confirmar-texto"></p>
+          <button id="form-si-quitar" type="button" class="peligro"></button>
+          <button id="form-no-quitar" type="button" class="secundario"></button>
+        </div>
+      </div>
     </form>
   </div>
 

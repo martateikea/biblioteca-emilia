@@ -12,6 +12,7 @@
   --mostaza: #F7E1A6;
   --cielo: #D3E4F4;
   --coral: #F4B4A4;
+  --peligro: #9B2335;     /* rojo para quitar: 7,8:1 con texto blanco */
   --lila: #E6DDF4;
 
   --fuente: "Nunito", system-ui, sans-serif;
@@ -100,6 +101,8 @@ h1, h2, h3, #lema, .caja-titulo, #veredicto, #cotillea, .primario, .secundario, 
 
 /* Entrada */
 #acceso { box-shadow: 0 3px 0 var(--borde); }
+
+.peligro { font-family: var(--fuente-titulos); box-shadow: 0 3px 0 #6A1724; }
 
 /* Ventanas */
 .caja { border-radius: 28px; }

@@ -100,7 +100,7 @@ function doPost(e) {
   try {
     const datos = JSON.parse(e.postData.contents);
     if (!claveCorrecta(datos.clave)) return responder(SIN_CLAVE);
-    const acciones = { alta, reservar, editar };
+    const acciones = { alta, reservar, editar, quitar, anular };
     const accion = acciones[datos.accion];
     if (!accion) throw new Error('Acción no válida.');
     const libro = accion(datos);
@@ -178,6 +178,30 @@ function editar(datos) {
     if (indice[campo] >= 0) libro[campo] = fila[indice[campo]];
   });
   return publico(libro);
+}
+
+// Quitar un cuento de la estantería (borra su fila). La lista de deseos es cosa de los padres.
+// Si es un error, se recupera con Archivo > Historial de versiones.
+function quitar(datos) {
+  const { hoja, filas, indice } = leerHoja();
+  const i = buscarFila(filas, indice, datos.isbn, datos.original);
+  if (i < 0) throw new Error('No encontramos ese libro. Recarga la página.');
+  if (!ESTADOS_FAMILIA.includes(filas[i][indice.estado])) {
+    throw new Error('Este libro solo se puede quitar desde el Sheet.');
+  }
+  hoja.deleteRow(i + 2);
+  return { quitado: true };
+}
+
+// Anular una reserva: el cuento vuelve a la lista de deseos y se borra quién lo reservó.
+function anular(datos) {
+  const { hoja, filas, indice } = leerHoja();
+  const i = buscarFila(filas, indice, datos.isbn, datos.original);
+  if (i < 0) throw new Error('No encontramos ese libro. Recarga la página.');
+  if (filas[i][indice.estado] !== 'Reservado') throw new Error('Este libro ya no está reservado.');
+  hoja.getRange(i + 2, indice.estado + 1).setValue('Lista de deseos');
+  if (indice.reservadoPor >= 0) hoja.getRange(i + 2, indice.reservadoPor + 1).setValue('');
+  return { estado: 'Lista de deseos' };
 }
 
 function reservar(datos) {

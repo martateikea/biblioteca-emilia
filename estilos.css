@@ -202,6 +202,24 @@ body.bloqueada #cotillea, body.bloqueada #resultados, body.bloqueada #lema { dis
   font-size: 1rem;
   font-weight: 400;
 }
+/* Anular y quitar: abajo, separados del resto y discretos */
+#form-mas { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--borde); text-align: center; }
+#form-mas-botones { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 20px; }
+.enlace-suave, .enlace-peligro {
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.enlace-suave { color: var(--texto); }
+.enlace-peligro { color: var(--peligro); }
+#form-confirmar p { margin: 0 0 4px; font-weight: 600; }
+.peligro { display: block; width: 100%; margin-top: 8px; padding: 13px 20px; border: 0; border-radius: 999px; background: var(--peligro); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+
 .aviso { min-height: 1.2em; margin: 12px 0 0; font-size: 0.95rem; color: var(--acento); text-align: center; }
 
 /* --- Estantería: botón para abrirla, secciones y lista de cuentos --- */

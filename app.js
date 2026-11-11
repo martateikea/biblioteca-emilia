@@ -247,6 +247,7 @@ function recordarNombre(nombre) {
 function abrirFormulario(accion, { estado, libro } = {}) {
   // Si se edita o reserva navegando por la estantería, al guardar seguimos en ella.
   pendiente = { accion, libro, desdeEstanteria: accion !== 'alta' && !$('consulta').value.trim() };
+  $('aviso-flotante').hidden = true; // que no tape los botones de la ventana
   $('form').reset();
   $('form-aviso').textContent = '';
   $('form-enviar').disabled = false;
@@ -275,6 +276,16 @@ function abrirFormulario(accion, { estado, libro } = {}) {
     campo('isbn').value = desdeEscaneo || esIsbn(soloDigitos(consulta)) ? soloDigitos(consulta) : '';
     portadaForm = desdeEscaneo ? ultimaFicha.portada ?? '' : '';
   }
+  // Anular y quitar solo al editar; anular, además, solo si está reservado.
+  $('form-mas').hidden = accion !== 'editar';
+  $('form-mas-botones').hidden = false;
+  $('form-confirmar').hidden = true;
+  $('form-anular').hidden = libro?.estado !== 'Reservado';
+  $('form-anular').textContent = TEXTOS.botonAnular;
+  $('form-quitar').textContent = TEXTOS.botonQuitar;
+  $('form-confirmar-texto').textContent = TEXTOS.confirmarQuitar;
+  $('form-si-quitar').textContent = TEXTOS.botonSiQuitar;
+  $('form-no-quitar').textContent = TEXTOS.botonNoQuitar;
   actualizarNombre();
   $('formulario').hidden = false;
 }
@@ -362,9 +373,43 @@ async function guardarFormulario(evento) {
     }
   } catch (error) {
     $('form-enviar').disabled = false;
-    $('form-aviso').textContent = error instanceof TypeError
-      ? 'No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.'
-      : error.message;
+    $('form-aviso').textContent = textoError(error);
+  }
+}
+
+const textoError = (error) => (error instanceof TypeError
+  ? 'No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.'
+  : error.message);
+
+// Anular la reserva o quitar el cuento, desde la ventana de editar.
+async function accionExtra(accion) {
+  const { libro, desdeEstanteria } = pendiente;
+  const botones = ['form-anular', 'form-quitar', 'form-si-quitar', 'form-no-quitar', 'form-enviar'].map($);
+  botones.forEach((b) => { b.disabled = true; });
+  $('form-aviso').textContent = 'Guardando…';
+  try {
+    await enviar({ accion, isbn: libro.isbn, original: libro.titulo });
+    $('formulario').hidden = true;
+    if (accion === 'quitar') {
+      libros.splice(libros.indexOf(libro), 1);
+      actualizarCifra();
+      if (desdeEstanteria) pintar();
+      else volverAEstanteria(); // el cuento ya no existe: no tiene sentido seguir en su búsqueda
+      avisar(TEXTOS.quitado);
+    } else {
+      libro.estado = 'Lista de deseos';
+      if (desdeEstanteria) {
+        actualizarCifra();
+        pintar();
+        avisar(TEXTOS.anulada);
+      } else {
+        mostrarApuntado(libro, TEXTOS.anulada);
+      }
+    }
+  } catch (error) {
+    $('form-aviso').textContent = textoError(error);
+  } finally {
+    botones.forEach((b) => { b.disabled = false; });
   }
 }
 
@@ -574,5 +619,15 @@ $('acceso').addEventListener('submit', entrar);
 $('form').addEventListener('change', actualizarNombre);
 campo('isbn').addEventListener('input', completarPorIsbn);
 $('form-cerrar').addEventListener('click', () => { $('formulario').hidden = true; });
+$('form-anular').addEventListener('click', () => accionExtra('anular'));
+$('form-quitar').addEventListener('click', () => {
+  $('form-mas-botones').hidden = true;
+  $('form-confirmar').hidden = false;
+});
+$('form-no-quitar').addEventListener('click', () => {
+  $('form-confirmar').hidden = true;
+  $('form-mas-botones').hidden = false;
+});
+$('form-si-quitar').addEventListener('click', () => accionExtra('quitar'));
 
 cargar();

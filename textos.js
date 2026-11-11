@@ -33,6 +33,14 @@ const TEXTOS = {
   formEditar: ['¿Hay novedades?', '¿Ya se lo has dado? Cámbialo aquí.'],
   editado: ['¡Gracias!', 'La estantería ya está al día.'],
 
+  botonAnular: 'Anular la reserva',
+  botonQuitar: 'Quitar de la estantería',
+  confirmarQuitar: '¿Seguro? Se quitará de la estantería para toda la familia.',
+  botonSiQuitar: 'Sí, quitarlo',
+  botonNoQuitar: 'No, dejarlo',
+  quitado: ['Quitado.', 'Ya no está en su estantería.'],
+  anulada: ['Reserva anulada.', 'Vuelve a estar en su lista de deseos.'],
+
   accesoComprobando: 'Comprobando…',
   accesoError: 'Esa no es. Pregúntala en casa.',
   accesoCambiada: 'La contraseña ha cambiado. Escribe la nueva.',
